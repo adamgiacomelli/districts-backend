@@ -9,9 +9,13 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var addr = flag.String("addr", "localhost:8080", "http service address")
+var addr = flag.String("addr", "localhost:8088", "http service address")
 
-var upgrader = websocket.Upgrader{} // use default options
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+} // use default options
 
 func echo(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
@@ -41,9 +45,14 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 func InitWsServer() {
 	flag.Parse()
+	log.Printf("Initializing")
+
 	log.SetFlags(0)
+	log.Printf("Initializing echo")
 	http.HandleFunc("/echo", echo)
+	log.Printf("Initializing home")
 	http.HandleFunc("/", home)
+
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
 
